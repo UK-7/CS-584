@@ -3,6 +3,7 @@ import numpy as np
 from numpy.linalg import pinv
 import matplotlib.pyplot as plt
 import math
+
 from sklearn.cross_validation import KFold
 from sklearn.preprocessing import PolynomialFeatures
 
@@ -86,16 +87,28 @@ def findError(Y_hat, Y):
       error = error/len(Y_hat)
       return error
 
+#
+# Linear Regression using sklearn LinearRegeression Package
+# Input: Training data set X and labels Y
+# Returns: NA. Prints training and testing errors.
+#
+
+def 
+
 
 #
 # Linear Regression over 4 data sets with K-Fold validataion
-# Input: List of files with the datasets 'inputFiles'. Maximum degree of polynomial 'i', 1 by default
+# Input: List of files with the datasets 'inputFiles'. 
+#        Maximum degree of polynomial 'i', 1 by default
 # Return: error[training, testing]. Plot the model
 #
 
 def linearRegressionKFold(inputFiles, i=1):
+      print "\nSingle Variable, Degree: %s" % i
+      print "###########################"
+
       for File in inputFiles:
-            print "-----"
+            print "==========================="
             print "Data Set %s" % File
             data = tools.readData(File)
             X = data[:, 0]
@@ -112,10 +125,13 @@ def linearRegressionKFold(inputFiles, i=1):
                   TestError = TestError + findError(theta, Y[test])  
             TestError = TestError / len(kf)
             TrainError = TrainError / len(kf)
-            print "Single Variable, Degree: %s" % i
-            print "###########################"
+            print "---------------------------"
+            print "Theta: %s" % theta
+            print "---------------------------"
             print "Test Error: %s" % TestError
             print "Train Error: %s" % TrainError
+            
+
 
 # 
 # Linear Regression over entire data set without K-Fold validatioan with plot
@@ -129,13 +145,14 @@ def linearRegression(inputFiles, i = 1):
             data = tools.readData(File)
             Z = createZ(data[:, 0], i)
             theta = regress(Z, data[:, 1]) 
-            print "Theta: %s" % theta
             Y_hat = YHat(theta, data[:, 0])
             plt.subplot(2,2,k)
-            plt.scatter(data[:, 0], data[:, 1], color="blue")
+            plt.scatter(data[:, 0], data[:, 1], color="green")
             X = np.sort(data[:, 0])
-            plt.plot(X, Y_hat, color="red")
+            plt.plot(X, Y_hat, color="red", lw=2)
             k = k + 1
+      
+      plt.suptitle("Single Variable Degree: %s" % i)
       plt.show()
 
 #
