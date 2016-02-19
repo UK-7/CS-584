@@ -49,8 +49,8 @@ def regress(Z, Y):
 #
 
 def YHat(theta, X):
-      X = X #BUG!!!!!!!
-      X_ = X
+      X_ = np.sort(X)
+      X = np.sort(X)
       Z = np.ones(len(X))
       for k in range(1, len(theta)):
             Z = np.column_stack((Z, X_))
@@ -133,7 +133,7 @@ def linearRegression(inputFiles, i = 1):
             Y_hat = YHat(theta, data[:, 0])
             plt.subplot(2,2,k)
             plt.scatter(data[:, 0], data[:, 1], color="blue")
-            X = data[:, 0]
+            X = np.sort(data[:, 0])
             plt.plot(X, Y_hat, color="red")
             k = k + 1
       plt.show()
@@ -155,3 +155,11 @@ if __name__ == "__main__":
       # Single Feature second degree
       linearRegressionKFold(inputFiles, i=2)
       linearRegression(inputFiles, i=2)
+
+      # Single Feature thrid degree
+      linearRegressionKFold(inputFiles, i=3)
+      linearRegression(inputFiles, i=3)
+
+      # Single Feature fourth degree
+      linearRegressionKFold(inputFiles, i=4)
+      linearRegression(inputFiles, i=4)
