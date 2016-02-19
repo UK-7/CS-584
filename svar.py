@@ -49,7 +49,7 @@ def regress(Z, Y):
 #
 
 def YHat(theta, X):
-      X = sorted(X) #BUG!!!!!!!
+      X = X #BUG!!!!!!!
       X_ = X
       Z = np.ones(len(X))
       for k in range(1, len(theta)):
