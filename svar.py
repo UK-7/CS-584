@@ -3,32 +3,39 @@ import numpy as np
 from numpy.linalg import pinv
 import matplotlib.pyplot as plt
 import math
+from sklearn.cross_validation import KFold
+from sklearn.preprocessing import PolynomialFeatures
 
 #
 # Create the Z matrix based on the specified degree of polynomial
+# Input: data matrix of input vectors. Degree of polynomial i
+# Return: Z matrix with added ones
 #
-def createZ(data, i):
-      Z = np.ones(len(data))
-      X = data[:, 0]
-      x_new = X
-      for k in range (0, i):
-            x_new = x_new * X
-            Z = np.column_stack((Z, x_new))
-      
+def createZ(X, i=1):
+      poly = PolynomialFeatures(i)
+      X = transposeHelper(X)
+      Z = poly.fit_transform(X)
       return Z
 
 #
-# Strip the shuffled data set into 9/10 part training and 1/10 part test
+# Helper function to transpose the array or the matrix
+# Input: X the data matrix or array
+# Return: X transposed
 #
-def stripTestAndTraining(data):
-      k = math.ceil(len(data)/10)
-      training = data[k:,]
-      test = data[0:k,]
-      return test, training
+
+def transposeHelper(X):
+      if len(X.shape)>1:
+            X=np.transpose(X)
+      else:
+            X=X.reshape(len(X),1)
+      return X
 
 #
 # Regression using pseudo inverse
+# Input: Data Matrix and given labels
+# Return: theta matrix - projection of Y on Z
 #
+
 def regress(Z, Y):
       Z_plus = pinv(Z)
       theta = np.dot(Z_plus, Y)
@@ -36,27 +43,28 @@ def regress(Z, Y):
       return theta
 
 #
-# Plot the curve based on given theta
+# Plot the curve based on given theta and specified degree
+# Input: coefficient matrix theta and desired degree of polynomial
+# Return: Y-hat coordinates of plotted data
 #
 
-def plotTheta(theta, i):
-      Z = np.ones(i)
-      X = np.arange(i)
+def YHat(theta, X):
+      X = sorted(X) #BUG!!!!!!!
+      X_ = X
+      Z = np.ones(len(X))
       for k in range(1, len(theta)):
-            Z = np.column_stack((Z, X))
-            X = X*X
+            Z = np.column_stack((Z, X_))
+            X_ = X_*X
       Y_hat = np.dot(Z, theta)
       return Y_hat
-      
 
 #
-# Main function.
+# Creates a scatter plot of data in files given in inputFiles
+# Return: NA
+# Input: inputFiles - list of data files
 #
-           
-if __name__ == "__main__":
-      inputFiles = ["svar-set1.txt", "svar-set2.txt", 
-                    "svar-set3.txt", "svar-set4.txt"]
-  
+
+def plotData(inputFiles):
       i = 1;
       for File in inputFiles:
             data = tools.readData(File)
@@ -64,17 +72,86 @@ if __name__ == "__main__":
             plt.scatter(data[:, 0], data[:, 1], color="black")
             i = i+1
       plt.show()
+      
+#
+# Find the errors between the given Y-Hat and the target Y
+# Input: Y and Y-Hat
+# Return: Normalized Mean Squared Error
+#
+def findError(Y_hat, Y):
+      
+      i = 0;
+      for i in range(0, len(Y_hat)):
+            error = ((Y_hat[i] - Y[i])**2)/(Y[i])**2
+      error = error/len(Y_hat)
+      return error
 
-      i = 1
+
+#
+# Linear Regression over 4 data sets with K-Fold validataion
+# Input: List of files with the datasets 'inputFiles'. Maximum degree of polynomial 'i', 1 by default
+# Return: error[training, testing]. Plot the model
+#
+
+def linearRegressionKFold(inputFiles, i=1):
+      for File in inputFiles:
+            print "-----"
+            print "Data Set %s" % File
+            data = tools.readData(File)
+            X = data[:, 0]
+            Y = data[:, 1]
+            kf = KFold(len(data), n_folds=10, shuffle=True)
+            TrainError = 0
+            TestError = 0
+            for train, test in kf:
+                  Z = createZ(X[train], i)
+                  theta = regress(Z, Y[train])
+                  Y_hat = YHat(theta, X[train])
+                  Y_hat_test = YHat(theta, X[test])
+                  TrainError = TrainError + findError(theta, Y[train])
+                  TestError = TestError + findError(theta, Y[test])  
+            TestError = TestError / len(kf)
+            TrainError = TrainError / len(kf)
+            print "Single Variable, Degree: %s" % i
+            print "###########################"
+            print "Test Error: %s" % TestError
+            print "Train Error: %s" % TrainError
+
+# 
+# Linear Regression over entire data set without K-Fold validatioan with plot
+# Input: List of input files
+# Returns: NA
+#
+
+def linearRegression(inputFiles, i = 1):
+      k = 1
       for File in inputFiles:
             data = tools.readData(File)
-            np.random.shuffle(data)
-            test, train = stripTestAndTraining(data)
-            Z = createZ(train, 1)
-            theta = regress(Z, train[:, 1])
-            Y_hat = plotTheta(theta, 50)
-            plt.subplot(2, 2, i)
-            plt.scatter(data[:, 0], data[:, 1], color="red")
-            plt.plot(Y_hat)
-            i = i+1
+            Z = createZ(data[:, 0], i)
+            theta = regress(Z, data[:, 1]) 
+            print "Theta: %s" % theta
+            Y_hat = YHat(theta, data[:, 0])
+            plt.subplot(2,2,k)
+            plt.scatter(data[:, 0], data[:, 1], color="blue")
+            X = data[:, 0]
+            plt.plot(X, Y_hat, color="red")
+            k = k + 1
       plt.show()
+
+#
+# Main function.
+#
+       
+if __name__ == "__main__":
+      inputFiles = ["svar-set1.txt", "svar-set2.txt", 
+                    "svar-set3.txt", "svar-set4.txt"]
+      # Plot original data in a scatter plot
+      plotData(inputFiles)
+      
+      # Single Feature first degree
+      linearRegressionKFold(inputFiles)
+      linearRegression(inputFiles)
+
+      # Single Feature second degree
+      linearRegressionKFold(inputFiles, i=2)
+      linearRegression(inputFiles, i=2)
