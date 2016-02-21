@@ -26,7 +26,7 @@ def regress(Z, Y):
 # Linear Regression for multivarate data
 # Input: inputFiles - List of input files for multivariate data
 #        i - degree of required polynomial
-# Returns: NA. 3D plot if two variables
+# Returns: Mean Squared Error for each data set for the given polynomial degree
 #
 def polyRegressionKFold(inputFiles, deg=2):
       print "***************************"
@@ -58,6 +58,22 @@ def polyRegressionKFold(inputFiles, deg=2):
             print "Train Error: %s" % TrainError
       return np.asarray(errors)
                   
+
+# 
+# Newton-Raphson method to iteratively calculate the parameter values
+# Input: set of inputFiles
+# Return: A parameter matrix theta calculated iteratively
+#
+
+def newtonRaphson(inputFiles):
+      pol = PolynomialFeatures(2)
+      for File  in inputFiles:
+            data = tools.readData(File)
+            X = data[:, :-1]
+            Y = data[:, -1]
+            Z = pol.fit_transform(X)
+            theta =
+            
             
 # Main Function
 #
