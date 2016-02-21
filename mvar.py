@@ -115,9 +115,20 @@ def recalculateTheta(theta, Z, Y):
 # 
 
 def polyRegression(inputFiles):
-      
-
-
+      pol = PolynomialFeatures(2)
+      errors = []
+      for Files in inputFiles:
+            data = tools.readData(Files)
+            data = data[np.argsort(data[:, 0])]
+            X = data[:, :-1]
+            Y = data[:, -1]
+            Z = pol.fit_transform(X)
+            theta = regress(Z, Y)
+            Y_hat = np.dot(Z, theta)
+            explicit_error = tools.findError(Y_hat, Y)
+            errors.append(explicit_error)
+      return errors
+            
 
 #            
 # Main Function
@@ -142,4 +153,11 @@ if __name__ == "__main__":
             print "Best for Dat Set %s: Degree %s" % (i, best[i,1])
             print "Error: %s\n" % best[i,0]
             
-      newtonRaphson(inputFiles)
+      iterative_er = newtonRaphson(inputFiles)
+      explicit_er = polyRegression(inputFiles)
+      i = 0
+      print "\nError Comparisons:"
+      print "__________________\n"
+      print "File\t\tIterative\t\tExplicit"
+      for f in inputFiles:
+            print "%s:\t%s\t%s" % (f, iterative_er[i], explicit_er[i])
