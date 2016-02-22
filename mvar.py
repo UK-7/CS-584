@@ -141,13 +141,11 @@ if __name__ == "__main__":
       print "Multi Variate Regression"
       best = np.asarray([[sys.float_info.max, 0], [sys.float_info.max, 0], [sys.float_info.max, 0], [sys.float_info.max, 0]])
       k = 2;
-      '''
       for k in range (2, 5):
             errors = polyRegressionKFold(inputFiles, deg=k)
             for i in range (0, len(errors)):
                   if (best[i,0] > errors[i,0]):
                         best[i,:] = errors[i,:]
-      '''
       print "\nChosen Models:"
       for i in range (0,len(best)):
             print "Best for Dat Set %s: Degree %s" % (i, best[i,1])
@@ -161,3 +159,4 @@ if __name__ == "__main__":
       print "File\t\tIterative\t\tExplicit"
       for f in inputFiles:
             print "%s:\t%s\t%s" % (f, iterative_er[i], explicit_er[i])
+      
